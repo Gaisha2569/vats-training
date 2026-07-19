@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>บทเรียนวิดีโอ — การเตรียมเครื่องมือผ่าตัดทรวงอกผ่านกล้อง VATS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
+:root{
+  --bg:#0E2A47; --bg2:#0a1f36; --card:#14375c; --card2:#183f68;
+  --line:rgba(255,255,255,.10); --tx:#eaf1f9; --mut:#9fb6ce;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Sarabun',-apple-system,BlinkMacSystemFont,sans-serif;background:
+  radial-gradient(1200px 600px at 20% -10%,#1a4a7a33,transparent),
+  linear-gradient(180deg,#0E2A47,#081c30);background-color:#0E2A47;color:var(--tx);min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 22px 70px}
+header.top{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+header.top .logo{width:56px;height:56px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0a7d3b;font-weight:700;text-align:center;overflow:hidden}
+header.top .logo img{width:100%;height:100%;object-fit:contain}
+h1{font-size:26px;font-weight:700;line-height:1.25}
+.sub{color:var(--mut);font-size:15px;margin-top:2px}
+.player{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:26px 0 12px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+video{width:100%;display:block;background:#000;aspect-ratio:16/9}
+.pbar{display:flex;align-items:center;gap:14px;padding:16px 20px}
+.pbar .badge{min-width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:#fff}
+.pbar .meta h2{font-size:19px;font-weight:700}
+.pbar .meta .en{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-top:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px);background:var(--card2);border-color:rgba(255,255,255,.22)}
+.card.active{outline:2px solid var(--acc,#2f6fb0);outline-offset:-2px}
+.thumb{position:relative;aspect-ratio:16/9;background:#0a1f36;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;opacity:.92}
+.thumb .num{position:absolute;top:10px;left:10px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.thumb .dur{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.72);color:#fff;font-size:12px;padding:3px 8px;border-radius:6px}
+.thumb .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:.18s}
+.card:hover .play{opacity:1}
+.thumb .play span{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.92);color:#0E2A47;display:flex;align-items:center;justify-content:center;font-size:22px;padding-left:4px}
+.cbody{padding:13px 15px 15px}
+.cbody .th{font-size:16px;font-weight:600;line-height:1.3}
+.cbody .en{color:var(--mut);font-size:12.5px;margin-top:3px}
+footer{margin-top:40px;color:var(--mut);font-size:13px;text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html" style="display:inline-block;margin-bottom:16px;color:#9fb6ce;
+     text-decoration:none;font-size:14.5px;padding:7px 15px;border-radius:20px;
+     background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10)">&larr; กลับหน้าแรก</a>
+  <header class="top">
+    <div class="logo" id="brandlogo">MOPH</div>
+    <div>
+      <h1>บทเรียนวิดีโอ — การเตรียมเครื่องมือผ่าตัดทรวงอกผ่านกล้อง (VATS)</h1>
+      <div class="sub">Video-Assisted Thoracoscopic Surgery • สำหรับพยาบาลห้องผ่าตัดทรวงอก • 6 หัวข้อการเรียน</div>
+    </div>
+  </header>
+
+  <div class="player">
+    <video id="vid" controls preload="metadata" playsinline poster=""></video>
+    <div class="pbar">
+      <div class="badge" id="pbadge">01</div>
+      <div class="meta">
+        <h2 id="ptitle"></h2>
+        <div class="en" id="pen"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    กระทรวงสาธารณสุข • สื่อการเรียนการสอนการเตรียมเครื่องมือผ่าตัด VATS<br>
+    เสียงบรรยายและภาพประกอบจัดทำเพื่อการฝึกอบรมภายใน
+  </footer>
+</div>
+
+<script>
+const BASE="videos/";
+const CLIPS=[
+ {n:1,th:"กายวิภาคของปอด",en:"Anatomy of the Lung",dur:"1:49",acc:"#2f6fb0"},
+ {n:2,th:"พยาธิสภาพปกติและผิดปกติของปอด",en:"Normal & Abnormal Pathology",dur:"0:59",acc:"#e8963a"},
+ {n:3,th:"โรคที่เป็นข้อบ่งชี้ในการผ่าตัด VATS",en:"Indications for VATS Surgery",dur:"1:06",acc:"#17a2a0"},
+ {n:4,th:"การเตรียมผู้ป่วยก่อนผ่าตัด",en:"Pre-operative Preparation",dur:"1:36",acc:"#3aa76d"},
+ {n:5,th:"การเตรียมผู้ป่วยระยะผ่าตัด",en:"Intra-operative Care",dur:"4:09",acc:"#7a5fc0"},
+ {n:6,th:"การดูแลผู้ป่วยหลังผ่าตัด",en:"Post-operative Care",dur:"2:15",acc:"#d8567f"},
+];
+// *** ทุกครั้งที่แก้ไฟล์วิดีโอ ให้เพิ่มเลขนี้ 1 (เช่น "1" -> "2") ***
+// เพื่อบังคับให้เบราว์เซอร์โหลดวิดีโอตัวใหม่ ไม่ใช้ตัวเก่าที่ค้างใน cache
+const VER="4";
+const pad=n=>String(n).padStart(2,"0");
+const grid=document.getElementById("grid");
+const vid=document.getElementById("vid");
+const ptitle=document.getElementById("ptitle"), pen=document.getElementById("pen"), pbadge=document.getElementById("pbadge");
+let cur=0;
+
+function select(i,autoplay){
+  cur=i; const c=CLIPS[i];
+  vid.src=BASE+"clip"+c.n+".mp4?v="+VER;
+  vid.poster=BASE+"clip"+c.n+".jpg?v="+VER;
+  ptitle.textContent=c.n+". "+c.th;
+  pen.textContent=c.en+" • "+c.dur+" นาที";
+  pbadge.textContent=pad(c.n); pbadge.style.background=c.acc;
+  document.querySelectorAll(".card").forEach((el,j)=>{el.classList.toggle("active",j===i);el.style.setProperty("--acc",CLIPS[j].acc)});
+  if(autoplay){vid.load();vid.play().catch(()=>{});}
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+vid.addEventListener("ended",()=>{ if(cur<CLIPS.length-1) select(cur+1,true); });
+
+CLIPS.forEach((c,i)=>{
+  const card=document.createElement("div");
+  card.className="card"; card.style.setProperty("--acc",c.acc);
+  card.innerHTML=`
+    <div class="thumb">
+      <img src="${BASE}clip${c.n}.jpg?v=${VER}" alt="">
+      <div class="num" style="background:${c.acc}">${pad(c.n)}</div>
+      <div class="dur">${c.dur}</div>
+      <div class="play"><span>&#9658;</span></div>
+    </div>
+    <div class="cbody">
+      <div class="th">${c.th}</div>
+      <div class="en">${c.en}</div>
+    </div>`;
+  card.onclick=()=>select(i,true);
+  grid.appendChild(card);
+});
+// try to load ministry logo if present next to page
+const lg=new Image();
+lg.onload=()=>{document.getElementById("brandlogo").innerHTML="";document.getElementById("brandlogo").appendChild(lg);};
+lg.src="videos/logo.png";
+select(0,false);
+</script>
+</body>
+</html>

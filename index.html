@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบฝึกอบรมการเตรียมเครื่องมือผ่าตัดทรวงอกผ่านกล้อง (VATS)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Sarabun',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:radial-gradient(1200px 700px at 25% -15%,#1a4a7a44,transparent),
+             linear-gradient(180deg,#0E2A47,#081c30);
+  background-color:#0E2A47;color:#eaf1f9;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.wrap{max-width:1000px;width:100%}
+header{text-align:center;margin-bottom:46px}
+.logo{width:88px;height:88px;border-radius:50%;background:#fff;margin:0 auto 20px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  font-size:12px;color:#0a7d3b;font-weight:700;
+  box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.logo img{width:100%;height:100%;object-fit:contain}
+h1{font-size:30px;font-weight:700;line-height:1.35;margin-bottom:10px}
+.sub{color:#9fb6ce;font-size:16px;line-height:1.6}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:22px}
+.card{background:#14375c;border:1px solid rgba(255,255,255,.10);border-radius:20px;
+  padding:32px 28px;text-decoration:none;color:inherit;display:block;transition:.2s;
+  box-shadow:0 14px 34px rgba(0,0,0,.30)}
+.card:hover{transform:translateY(-4px);background:#183f68;border-color:rgba(255,255,255,.26)}
+.ico{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;
+  justify-content:center;font-size:26px;color:#fff;margin-bottom:18px}
+.card h2{font-size:21px;font-weight:700;margin-bottom:8px}
+.card p{color:#9fb6ce;font-size:15px;line-height:1.6}
+.meta{margin-top:16px;font-size:13px;color:#7f9ab6;display:flex;gap:8px;flex-wrap:wrap}
+.tag{background:rgba(255,255,255,.09);padding:4px 11px;border-radius:20px}
+.go{margin-top:18px;font-size:15px;font-weight:600}
+footer{margin-top:44px;text-align:center;color:#7f9ab6;font-size:13.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo" id="lg">MOPH</div>
+    <h1>ระบบฝึกอบรมการเตรียมเครื่องมือผ่าตัดทรวงอกผ่านกล้อง</h1>
+    <div class="sub">Video-Assisted Thoracoscopic Surgery (VATS)<br>สำหรับพยาบาลห้องผ่าตัดทรวงอก</div>
+  </header>
+
+  <div class="cards">
+    <a class="card" href="lessons.html">
+      <div class="ico" style="background:#2f6fb0">&#9658;</div>
+      <h2>บทเรียนวิดีโอ</h2>
+      <p>เนื้อหา 6 หัวข้อ พร้อมเสียงบรรยาย ตั้งแต่กายวิภาคปอด การเตรียมเครื่องมือ ไปจนถึงการดูแลหลังผ่าตัด</p>
+      <div class="meta"><span class="tag">6 คลิป</span><span class="tag">ประมาณ 12 นาที</span><span class="tag">1080p</span></div>
+      <div class="go" style="color:#7fb4ea">เริ่มเรียน &rarr;</div>
+    </a>
+
+    <a class="card" href="app.html">
+      <div class="ico" style="background:#3aa76d">&#9635;</div>
+      <h2>เข้าใช้งานระบบฝึกอบรม</h2>
+      <p>ระบบฝึกอบรมแบบโต้ตอบ พร้อมแบบทดสอบและใบประกาศนียบัตรเมื่อเรียนจบ</p>
+      <div class="meta"><span class="tag">แบบทดสอบ</span><span class="tag">ใบประกาศฯ</span></div>
+      <div class="go" style="color:#7fd6a6">เข้าสู่ระบบ &rarr;</div>
+    </a>
+  </div>
+
+  <footer>
+    กระทรวงสาธารณสุข · สื่อการเรียนการสอนเพื่อการฝึกอบรมภายใน<br>
+    แนะนำให้เปิดด้วย Chrome, Edge หรือ Safari รุ่นใหม่
+  </footer>
+</div>
+<script>
+const lg=new Image();
+lg.onload=()=>{const b=document.getElementById('lg');b.innerHTML='';b.appendChild(lg);};
+lg.src='videos/logo.png';
+</script>
+</body>
+</html>
