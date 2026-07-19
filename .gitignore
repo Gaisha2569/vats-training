@@ -24,6 +24,9 @@ not use/
 ~$*
 ~WRL*.tmp
 
+# ไฟล์สำรองก่อนแก้
+app_original.html
+
 # ไฟล์ระบบ
 .DS_Store
 Thumbs.db
