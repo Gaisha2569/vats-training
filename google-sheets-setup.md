@@ -20,7 +20,13 @@
 ```javascript
 const SHEET_NAME = 'results';
 const HEADERS = ['uid', 'ชื่อ-สกุล', 'หน่วยงาน', 'ความก้าวหน้า(%)',
-                 'ก่อนเรียน', 'หลังเรียน', 'อัปเดตล่าสุด'];
+                 'ก่อนเรียน', 'หลังเรียน',
+                 'รายข้อก่อนเรียน', 'รายข้อหลังเรียน',
+                 'คำตอบก่อนเรียน', 'คำตอบหลังเรียน',
+                 'สมรรถนะก่อน', 'สมรรถนะหลัง', 'อัปเดตล่าสุด'];
+const COL = { uid:1, name:2, ward:3, prog:4, pre:5, post:6,
+              preC:7, postC:8, preA:9, postA:10,
+              cPre:11, cPost:12, ts:13 };
 
 function getSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -30,24 +36,48 @@ function getSheet() {
   return sh;
 }
 
+function findRow(sh, uid) {
+  const ids = sh.getRange(1, 1, Math.max(sh.getLastRow(), 1), 1).getValues();
+  for (let i = 1; i < ids.length; i++) if (ids[i][0] === uid) return i + 1;
+  return 0;
+}
+
+function stamp() {
+  return Utilities.formatDate(new Date(), 'Asia/Bangkok', 'yyyy-MM-dd HH:mm');
+}
+
 function doPost(e) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
     const d = JSON.parse(e.postData.contents);
     const sh = getSheet();
-    const rec = [d.uid, d.name, d.ward, d.progress, d.pre, d.post,
-                 Utilities.formatDate(new Date(), 'Asia/Bangkok', 'yyyy-MM-dd HH:mm')];
-    const rows = sh.getDataRange().getValues();
-    let found = 0;
-    for (let i = 1; i < rows.length; i++) {
-      if (rows[i][0] === d.uid) { found = i + 1; break; }
+    let row = findRow(sh, d.uid);
+
+    // ผู้ประเมินส่งคะแนนสมรรถนะ
+    if (d.type === 'comp') {
+      if (!row) return ContentService.createTextOutput('no user');
+      sh.getRange(row, d.phase === 'post' ? COL.cPost : COL.cPre)
+        .setValue(JSON.stringify(d.comp || {}));
+      sh.getRange(row, COL.ts).setValue(stamp());
+      return ContentService.createTextOutput('ok');
     }
-    if (found) sh.getRange(found, 1, 1, rec.length).setValues([rec]);
-    else sh.appendRow(rec);
+
+    // ผู้เรียนส่งความก้าวหน้า/คะแนน
+    if (!row) {
+      sh.appendRow([d.uid, d.name, d.ward, d.progress, d.pre, d.post,
+                    d.preCorrect, d.postCorrect, d.preAnswers, d.postAnswers,
+                    '', '', stamp()]);
+    } else {
+      sh.getRange(row, COL.name, 1, 7)
+        .setValues([[d.name, d.ward, d.progress, d.pre, d.post,
+                     d.preCorrect, d.postCorrect]]);
+      sh.getRange(row, COL.preA, 1, 2).setValues([[d.preAnswers, d.postAnswers]]);
+      sh.getRange(row, COL.ts).setValue(stamp());
+    }
     return ContentService.createTextOutput('ok');
   } catch (err) {
-    return ContentService.createTextOutput('error');
+    return ContentService.createTextOutput('error: ' + err);
   } finally {
     lock.releaseLock();
   }
@@ -55,13 +85,19 @@ function doPost(e) {
 
 function doGet(e) {
   const rows = getSheet().getDataRange().getValues();
+  const full = e && e.parameter && e.parameter.action === 'full';
   const out = [];
   for (let i = 1; i < rows.length; i++) {
-    if (!rows[i][0]) continue;
-    out.push({
-      uid: rows[i][0], name: rows[i][1], ward: rows[i][2],
-      progress: rows[i][3], pre: rows[i][4], post: rows[i][5]
-    });
+    const r = rows[i];
+    if (!r[0]) continue;
+    const o = { uid: r[0], name: r[1], ward: r[2],
+                progress: r[3], pre: r[4], post: r[5] };
+    if (full) {
+      o.preCorrect = r[6]; o.postCorrect = r[7];
+      o.preAnswers = r[8]; o.postAnswers = r[9];
+      o.compPre = r[10]; o.compPost = r[11]; o.updated = r[12];
+    }
+    out.push(o);
   }
   return ContentService.createTextOutput(JSON.stringify(out))
     .setMimeType(ContentService.MimeType.JSON);
@@ -106,6 +142,23 @@ git add config.js
 git commit -m "ตั้งค่าเก็บผลส่วนกลางและรหัสผ่าน Admin"
 git push
 ```
+
+---
+
+## ถ้าเคยตั้งค่าไว้แล้ว ต้องอัปเดตสคริปต์
+
+สคริปต์ข้างบนเป็นเวอร์ชันใหม่ที่เก็บ **คะแนนรายข้อ** และ **คะแนนประเมินสมรรถนะ** เพิ่ม
+ถ้าเคยวางเวอร์ชันเก่าไว้แล้ว ให้ทำดังนี้
+
+1. เปิด Apps Script ของสเปรดชีตเดิม → ลบโค้ดเก่าทั้งหมด → วางโค้ดใหม่ → บันทึก
+2. **ทำให้ใช้งานได้** → **จัดการการทำให้ใช้งานได้ (Manage deployments)**
+3. กดไอคอนดินสอ ✏️ → ช่อง "เวอร์ชัน" เลือก **เวอร์ชันใหม่ (New version)** → **ทำให้ใช้งานได้**
+
+   ถ้าสร้าง deployment ใหม่แทน URL จะเปลี่ยน ต้องไปแก้ `config.js` ด้วย
+4. ในสเปรดชีต ให้ **ลบแถวหัวตารางเดิม** (แถวที่ 1) ทิ้ง แล้วส่งข้อมูลใหม่เข้ามา 1 ครั้ง
+   ระบบจะสร้างหัวตารางชุดใหม่ 13 คอลัมน์ให้เอง
+
+   หรือถ้ามีข้อมูลทดสอบเดิมอยู่แล้วไม่เสียดาย ลบทั้งชีตแล้วให้สร้างใหม่ก็ได้
 
 ---
 
